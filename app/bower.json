@@ -1,0 +1,7 @@
+{
+  "name": "lottery",
+  "dependencies": {
+    "jquery": "*",
+    "blueimp-tmpl": "*"
+  }
+}

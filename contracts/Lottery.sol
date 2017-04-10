@@ -24,6 +24,9 @@ contract Lottery {
   }
 
   function participate() payable {
+    if (msg.value == 0) {
+      throw;
+    }
     uint r = currentRound();
     uint i = rounds[r].participants.length++;
     rounds[r].participants[i].addr = msg.sender;
@@ -37,6 +40,11 @@ contract Lottery {
 
   function getParticipantsLength(uint num) constant returns (uint) {
     return rounds[num].participants.length;
+  }
+
+  function getParticipant(uint roundNum, uint idx) constant returns (address, uint) {
+    Participant p = rounds[roundNum].participants[idx];
+    return (p.addr, p.amount);
   }
 
   function determineWinner(uint roundNum) {
