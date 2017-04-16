@@ -1,9 +1,8 @@
 var $ = require('./../bower_components/jquery/dist/jquery.js');
 var tmpl = require('./../bower_components/blueimp-tmpl/js/tmpl.js');
-
 var contractJson = require('./../../build/contracts/Lottery.json');
 
-var address = contractJson.networks['1'].address;
+var address = contractJson.networks[Object.keys(contractJson.networks)[0]].address;
 var abi = contractJson.abi;
 
 var lottery = web3.eth.contract(abi).at(address);
@@ -39,7 +38,7 @@ var renderData = function(rounds) {
 var renderRound = function(round) {
   var template = `
     <div style="border: 1px solid; margin-top: 10px">
-      <b> Rounder number: </b> {%= o.roundNum %} <br>
+      <b> Round number: </b> {%= o.roundNum %} <br>
       <b> Pot: </b> {%= web3.fromWei(o.pot) %} <br>
       <b> Participants: </b> <br>
       {% if (o.participants.length > 0) { %}
@@ -55,7 +54,6 @@ var renderRound = function(round) {
         <b> Winner: </b> {%= o.winner %} <br>
       {% } %}
       <b> Prize paid: </b> {%= o.prizeIsPaid %} <br>
-      <button class="determine-winner"> Determine winner </button>
       <button class="get-prize"> Get prize </button>
     </div>
   `;
@@ -72,10 +70,9 @@ var renderRound = function(round) {
 var loadData = function() {
   var data = [];
   var currentRound = lottery.currentRound();
-  for (var rNum = currentRound; rNum >= 0 && rNum >= currentRound - 100; rNum--) {
+  for (var rNum = currentRound; rNum >= 0 && rNum >= currentRound - 30; rNum--) {
     var roundData = lottery.rounds(rNum);
     var pot = roundData[0];
-    var winner = roundData[1];
     var prizeIsPaid = roundData[2];
     var participantsLength = lottery.getParticipantsLength(rNum);
     var participants = [];
@@ -83,11 +80,12 @@ var loadData = function() {
       var pData = lottery.getParticipant(rNum, i);
       participants.push({addr: pData[0], amount: pData[1]});
     }
+    var winner = lottery.getWinner(rNum);
     data.push({
       roundNum: rNum,
       participants: participants,
       pot: roundData[0],
-      winner: roundData[1],
+      winner: winner,
       prizeIsPaid: roundData[2]
     });
   }
