@@ -47,32 +47,41 @@ contract Lottery {
     return (p.addr, p.amount);
   }
 
-  function determineWinner(uint roundNum) {
-    if (!(roundNum < currentRound())) {
-      throw;
+  function getWinner(uint roundNum) constant returns (address) {
+    if (roundNum >= currentRound()) {
+      return address(0);
     }
     Round round = rounds[roundNum];
-    if (round.winner != 0) {
-      throw;
+    if (round.winner != address(0)) {
+      return round.winner;
     }
+
     Participant[] participants = round.participants;
+    if (participants.length == 0) {
+      return address(0);
+    }
+
     uint rand = uint(block.blockhash(startBlock + (roundNum + 1) * duration)) % round.pot;
 
     uint s = 0;
     for (uint i = 0; i < participants.length; i++) {
       s += participants[i].amount;
       if (s > rand) {
-        round.winner = participants[i].addr;
-        break;
+        return participants[i].addr;
       }
     }
   }
 
   function getPrize(uint roundNum) {
-    Round round = rounds[roundNum];
-    if (!(round.winner == msg.sender) || round.prizeIsPaid) {
+    if (roundNum >= currentRound()) {
       throw;
     }
+    address winner = getWinner(roundNum);
+    Round round = rounds[roundNum];
+    if ((winner != msg.sender) || round.prizeIsPaid) {
+      throw;
+    }
+    round.winner = winner;
     round.prizeIsPaid = true;
     if (!round.winner.send(round.pot)) {
       round.prizeIsPaid = false;
