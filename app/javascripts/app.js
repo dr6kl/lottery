@@ -54,7 +54,9 @@ var renderRound = function(round) {
         <b> Winner: </b> {%= o.winner %} <br>
       {% } %}
       <b> Prize paid: </b> {%= o.prizeIsPaid %} <br>
-      <button class="get-prize"> Get prize </button>
+      {% if (o.winner == web3.eth.accounts[0] && !o.prizeIsPaid) { %}
+        <button class="get-prize"> Get prize </button>
+      {% } %}
     </div>
   `;
   var el = $(tmpl(template, round));
