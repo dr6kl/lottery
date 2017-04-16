@@ -61,7 +61,11 @@ contract Lottery {
       return address(0);
     }
 
-    uint rand = uint(block.blockhash(startBlock + (roundNum + 1) * duration)) % round.pot;
+    uint blockHash = uint(block.blockhash(startBlock + (roundNum + 1) * duration));
+    if (blockHash == 0) {
+      return address(0);
+    }
+    uint rand = blockHash % round.pot;
 
     uint s = 0;
     for (uint i = 0; i < participants.length; i++) {
@@ -73,9 +77,6 @@ contract Lottery {
   }
 
   function getPrize(uint roundNum) {
-    if (roundNum >= currentRound()) {
-      throw;
-    }
     address winner = getWinner(roundNum);
     Round round = rounds[roundNum];
     if ((winner != msg.sender) || round.prizeIsPaid) {
